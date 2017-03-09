@@ -11,6 +11,8 @@ int main(int argc, char* argv[]) {
 	int size; 
 	int *index;
 
+    int num_threads = strtol(argv[1], null, 10);
+
 	// load input and create the unknown vector X
     Lab3LoadInput(&Au, &size);
     X = CreateVec(size);
