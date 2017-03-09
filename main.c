@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <timer.h>
+#include <omp.h>
 #include "Lab3IO.h"
 
 int main(int argc, char* argv[]) {
