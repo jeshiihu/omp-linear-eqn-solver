@@ -1,14 +1,20 @@
 CC = gcc
 
-SOURCES = main.c Lab3IO.c
+SOURCES = main.c Lab3IO.c datagen.c serialtester.c
 
-all: main
+all: main datagen serialtester
 
-main: server.c 
-	gcc -g -Wall -o main main.c Lab3IO.c
+main: main.c 
+	gcc -g -Wall -o main main.c Lab3IO.c 
+
+datagen: datagen.c
+	gcc -g -Wall -o datagen datagen.c Lab3IO.c
+
+serialtester: serialtester.c
+	gcc -g -Wall -o serialtester serialtester.c Lab3IO.c -lm
 
 clean:
-	-rm -f *.o main
+	-rm -f *.o main datagen serialtester
 
 run:
-	./main
+	./main ./datagen ./serialtester

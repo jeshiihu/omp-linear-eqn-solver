@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <timer.h>
 #include <omp.h>
+#include "timer.h"
 #include "Lab3IO.h"
 
 int main(int argc, char* argv[]) {
@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
     double temp;
 	int size; 
 	int *index;
+    double start, finish, elapsed;
 
     int num_threads = strtol(argv[1], null, 10);
 
@@ -20,6 +21,8 @@ int main(int argc, char* argv[]) {
     X = CreateVec(size);
 
 	index = malloc(size * sizeof(int));
+
+    GET_TIME(start);
     for (i = 0; i < size; ++i)
         index[i] = i;
 
@@ -59,7 +62,11 @@ int main(int argc, char* argv[]) {
             } 
         }
 
-         for (k=0; k< size; ++k)
+        for (k=0; k< size; ++k)
             X[k] = Au[index[k]][size] / Au[index[k]][k];
+
     }
+    GET_TIME(finish);
+    elapsed = finish - start;
+    Lab3SaveOutput(X, size, elapsed);
 }
