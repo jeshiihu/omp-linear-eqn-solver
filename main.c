@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 	int *index;
     double start, finish, elapsed;
 
-    int num_threads = strtol(argv[1], null, 10);
+    int thread_count = atoi(argv[1]);
 
 	// load input and create the unknown vector X
     Lab3LoadInput(&Au, &size);
@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
 	index = malloc(size * sizeof(int));
 
     GET_TIME(start);
+# pragma omp parallel for 
     for (i = 0; i < size; ++i)
         index[i] = i;
 
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]) {
         for (k = 0; k < size - 1; ++k){
             /*Pivoting*/
             temp = 0;
+
             for (i = k, j = 0; i < size; ++i)
                 if (temp < Au[index[i]][k] * Au[index[i]][k]){
                     temp = Au[index[i]][k] * Au[index[i]][k];
@@ -44,8 +46,9 @@ int main(int argc, char* argv[]) {
                 index[j] = index[k];
                 index[k] = i;
             }
-
+	
             /*calculating*/
+# pragma omp parallel for num_threads(thread_count) private(i,j,temp) shared(k,index, size, Au, X)
             for (i = k + 1; i < size; ++i){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 for (j = k; j < size + 1; ++j)
@@ -55,6 +58,7 @@ int main(int argc, char* argv[]) {
 
         /*Jordan elimination*/
         for (k = size - 1; k > 0; --k){
+# pragma omp parallel for private(i, temp) shared(k, size, Au, index, X)
             for (i = k - 1; i >= 0; --i ){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 Au[index[i]][k] -= temp * Au[index[k]][k];
@@ -62,6 +66,7 @@ int main(int argc, char* argv[]) {
             } 
         }
 
+# pragma omp for
         for (k=0; k< size; ++k)
             X[k] = Au[index[k]][size] / Au[index[k]][k];
 

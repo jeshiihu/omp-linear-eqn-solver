@@ -5,7 +5,7 @@ SOURCES = main.c Lab3IO.c datagen.c serialtester.c
 all: main datagen serialtester
 
 main: main.c 
-	gcc -g -Wall -o main main.c Lab3IO.c 
+	gcc -g -Wall -fopenmp -o main main.c Lab3IO.c 
 
 datagen: datagen.c
 	gcc -g -Wall -o datagen datagen.c Lab3IO.c
