@@ -31,11 +31,13 @@ int main(int argc, char* argv[]) {
         X[0] = Au[0][1] / Au[0][0];
     else{
         /*Gaussian elimination*/
+        #pragma omp for
         for (k = 0; k < size - 1; ++k){
             /*Pivoting*/
             temp = 0;
-
-            for (i = k, j = 0; i < size; ++i)
+            j = 0;
+            #pragma omp parallel for reduction(+:temp) shared(k, Au, index)
+            for (i = k; i < size; ++i)
                 if (temp < Au[index[i]][k] * Au[index[i]][k]){
                     temp = Au[index[i]][k] * Au[index[i]][k];
                     j = i;
@@ -48,7 +50,7 @@ int main(int argc, char* argv[]) {
             }
 	
             /*calculating*/
-            # pragma omp parallel for num_threads(thread_count) private(i,j,temp) shared(k,index, size, Au, X)
+            # pragma omp parallel for num_threads(thread_count) reduction(+:temp) private(i,j) shared(k,index, size)
             for (i = k + 1; i < size; ++i){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 for (j = k; j < size + 1; ++j)
@@ -58,7 +60,7 @@ int main(int argc, char* argv[]) {
 
         /*Jordan elimination*/
         for (k = size - 1; k > 0; --k){
-        # pragma omp parallel for private(i, temp) shared(k, size, Au, index, X)
+        # pragma omp parallel for reduction(+:temp) shared(k, size, index)
             for (i = k - 1; i >= 0; --i ){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 Au[index[i]][k] -= temp * Au[index[k]][k];
@@ -66,7 +68,7 @@ int main(int argc, char* argv[]) {
             } 
         }
 
-        # pragma omp for
+        # pragma omp parallel for shared(Au, index, size)
         for (k=0; k< size; ++k)
             X[k] = Au[index[k]][size] / Au[index[k]][k];
 
