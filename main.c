@@ -34,8 +34,9 @@ int main(int argc, char* argv[]) {
         for (k = 0; k < size - 1; ++k){
             /*Pivoting*/
             temp = 0;
-
-            for (i = k, j = 0; i < size; ++i)
+	
+	    j = 0;
+            for (i = k; i < size; ++i)
                 if (temp < Au[index[i]][k] * Au[index[i]][k]){
                     temp = Au[index[i]][k] * Au[index[i]][k];
                     j = i;
@@ -58,7 +59,6 @@ int main(int argc, char* argv[]) {
 
         /*Jordan elimination*/
         for (k = size - 1; k > 0; --k){
-        # pragma omp parallel for private(i, temp) shared(k, size, Au, index, X)
             for (i = k - 1; i >= 0; --i ){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 Au[index[i]][k] -= temp * Au[index[k]][k];
