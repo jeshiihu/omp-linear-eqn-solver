@@ -6,12 +6,11 @@
 
 int main(int argc, char* argv[]) {
 	
-	int i, j, k;
+	int i, j, k, size;
+    int *index;
 	double **Au;
     double *X;
     double temp;
-	int size; 
-	int *index;
     double start, finish, elapsed;
 
     int thread_count = atoi(argv[1]);
@@ -23,6 +22,8 @@ int main(int argc, char* argv[]) {
 	index = malloc(size * sizeof(int));
 
     GET_TIME(start);
+    // index vector is used to swap values faster and
+    // safely as it does not affect the memory directly
     # pragma omp parallel for 
     for (i = 0; i < size; ++i)
         index[i] = i;
@@ -35,8 +36,7 @@ int main(int argc, char* argv[]) {
             /*Pivoting*/
             temp = 0;
 	
-	    j = 0;
-            for (i = k; i < size; ++i)
+            for (i = k, j = 0; i < size; ++i)
                 if (temp < Au[index[i]][k] * Au[index[i]][k]){
                     temp = Au[index[i]][k] * Au[index[i]][k];
                     j = i;
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
             }
 	
             /*calculating*/
+            // keep i, j, temp private since dependecies only exit within each thread
             # pragma omp parallel for num_threads(thread_count) private(i,j,temp) shared(k,index, size, Au, X)
             for (i = k + 1; i < size; ++i){
                 temp = Au[index[i]][k] / Au[index[k]][k];
@@ -59,6 +60,8 @@ int main(int argc, char* argv[]) {
 
         /*Jordan elimination*/
         for (k = size - 1; k > 0; --k){
+            // keep i and temp private since dependecies only exit within each thread
+            # pragma omp parallel for private(i, temp) shared(k, size, Au, index, X)
             for (i = k - 1; i >= 0; --i ){
                 temp = Au[index[i]][k] / Au[index[k]][k];
                 Au[index[i]][k] -= temp * Au[index[k]][k];
@@ -69,7 +72,6 @@ int main(int argc, char* argv[]) {
         # pragma omp for
         for (k=0; k< size; ++k)
             X[k] = Au[index[k]][size] / Au[index[k]][k];
-
     }
 
     GET_TIME(finish);
